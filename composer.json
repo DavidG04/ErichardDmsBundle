@@ -11,7 +11,7 @@
     },
     "require-dev": {
         "nelmio/alice": "0.5.0",
-        "phpunit/phpunit": "4.8.**",
+        "phpunit/phpunit": "4.8.*",
         "doctrine/common": ">=2.3, <3.0",
         "doctrine/orm": "2.5.*",
         "symfony/monolog-bundle": "~2.4"
