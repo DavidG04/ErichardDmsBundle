@@ -1,16 +1,29 @@
 <?php
+/**
+ * Created by PhpStorm.
+ * User: d.galaup
+ * Date: 19/01/2016
+ * Time: 16:07
+ */
 
 namespace Erichard\DmsBundle\Tests\Entity;
 
 use Erichard\DmsBundle\Entity\Document;
 use Erichard\DmsBundle\Entity\DocumentNode;
 
+/**
+ * Class DocumentTest
+ *
+ * @package Erichard\DmsBundle\Tests\Entity
+ */
 class DocumentTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @expectedException RuntimeException
+     * tesComputedFilenameWithException
+     *
+     * @expectedException \RuntimeException
      */
-    public function test_computed_filename_with_exception()
+    public function tesComputedFilenameWithException()
     {
         $node = new DocumentNode();
         $document = new Document($node);
@@ -19,13 +32,23 @@ class DocumentTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * testComputedFilename
+     *
+     * @param mixed $document
+     * @param mixed $filename
+     *
      * @dataProvider getDocuments
      */
-    public function test_computed_filename($document, $filename)
+    public function testComputedFilename($document, $filename)
     {
         $this->assertEquals($filename, $document->getComputedFilename());
     }
 
+    /**
+     * getDocuments
+     *
+     * @return array
+     */
     public function getDocuments()
     {
         $node = new DocumentNode();
@@ -41,15 +64,15 @@ class DocumentTest extends \PHPUnit_Framework_TestCase
         return array(
             array(
                 $document1,
-                '00/00/00/00000001.jpg'
+                '00/00/00/00000001.jpg',
             ),
             array(
                 $document2,
-                '00/00/12/00001234.doc'
+                '00/00/12/00001234.doc',
             ),
             array(
                 $document3,
-                '00/12/34/00123400.noext'
+                '00/12/34/00123400.noext',
             ),
         );
     }

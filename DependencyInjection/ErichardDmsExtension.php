@@ -1,4 +1,10 @@
 <?php
+/**
+ * Created by PhpStorm.
+ * User: d.galaup
+ * Date: 19/01/2016
+ * Time: 15:25
+ */
 
 namespace Erichard\DmsBundle\DependencyInjection;
 
@@ -8,9 +14,9 @@ use Symfony\Component\DependencyInjection\Loader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 /**
- * This is the class that loads and manages your bundle configuration
+ * Class ErichardDmsExtension
  *
- * To learn more see {@link http://symfony.com/doc/current/cookbook/bundles/extension.html}
+ * @package Erichard\DmsBundle\DependencyInjection
  */
 class ErichardDmsExtension extends Extension
 {
@@ -25,9 +31,7 @@ class ErichardDmsExtension extends Extension
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
 
-        if (count($config['permission']['roles']) === 0
-            && empty($config['permission']['role_provider'])
-        )  {
+        if (count($config['permission']['roles_node']) === 0 && empty($config['permission']['role_provider'])) {
             throw new \RuntimeException("The DMS need to know which roles it can use. Please configure 'erichard_dms.permission.roles' or 'erichard_dms.permission.role_provider.");
         }
 

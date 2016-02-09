@@ -1,8 +1,13 @@
 <?php
+/**
+ * Created by PhpStorm.
+ * User: d.galaup
+ * Date: 22/01/2016
+ * Time: 14:48
+ */
 
 namespace Erichard\DmsBundle\Command;
 
-use Erichard\DmsBundle\Entity\Document;
 use Erichard\DmsBundle\Entity\DocumentNode;
 use Erichard\DmsBundle\Import\FilesystemImporter;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -11,8 +16,16 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * Class ImportDocumentCommand
+ *
+ * @package Erichard\DmsBundle\Command
+ */
 class ImportDocumentCommand extends ContainerAwareCommand
 {
+    /**
+     * configure
+     */
     protected function configure()
     {
         $this
@@ -20,11 +33,21 @@ class ImportDocumentCommand extends ContainerAwareCommand
             ->setDescription('Import a document tree into the DMS.')
             ->addArgument('source', InputArgument::REQUIRED, 'From where the document will be imported.')
             ->addOption('copy', null, InputOption::VALUE_NONE, 'Copy files instead of move.')
-            ->addOption('name', null, InputOption::VALUE_REQUIRED, 'Name of the import directory that will be created, or slug of an existing node.', 'Imported on '. date('Y-m-d') . ' at '. date('H:i'))
+            ->addOption('name', null, InputOption::VALUE_REQUIRED, 'Name of the import directory that will be created, or slug of an existing node.', 'Imported on '.date('Y-m-d').' at '.date('H:i'))
             ->addOption('exclude', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, 'Exclude some files or directories.')
         ;
     }
 
+    /**
+     * execute
+     *
+     * @param InputInterface  $input
+     * @param OutputInterface $output
+     *
+     * @SuppressWarnings("unused")
+     *
+     * @return mixed
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $sourceDir = $input->getArgument('source');
@@ -32,7 +55,7 @@ class ImportDocumentCommand extends ContainerAwareCommand
 
         // Trying to retrieve existing destination node.
         $dest = $manager->getRepository('ErichardDmsBundle:DocumentNode')->findOneBySlug($input->getOption('name'));
-        
+
         if (!isset($dest)) {
             // Prepare a newly created destination node
             $dest = new DocumentNode();
@@ -42,7 +65,7 @@ class ImportDocumentCommand extends ContainerAwareCommand
         // Launch the importer
         $importer = new FilesystemImporter($this->getContainer()->get('doctrine')->getManager(), array(
             'storage_path' => $this->getContainer()->getParameter('dms.storage.path'),
-            'copy'         => $input->getOption('copy')
+            'copy'         => $input->getOption('copy'),
         ));
         $importer->import($sourceDir, $dest, $input->getOption('exclude'));
     }

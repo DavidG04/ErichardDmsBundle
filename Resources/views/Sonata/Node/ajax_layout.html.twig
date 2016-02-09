@@ -1,0 +1,23 @@
+{% extends dms_layout|default('SonataAdminBundle::ajax_layout.html.twig') %}
+{% block content %}
+    <div class="container-fluid" style="padding:0">
+        <nav class="navbar navbar-default" style="position:relative" role="navigation">
+            {% include 'ErichardDmsBundle:Sonata/Node:_content_nav.html.twig' %}
+        </nav>
+    </div>
+    <div class="row">
+        <div class="col-md-3" style="margin-top: -20px; padding-left: 23px;">
+            {% block dms_sidebar %}
+                {% set nodes = node is defined? node.nodes : nodes %}
+                {% include 'ErichardDmsBundle:Sonata/Node:_tree.html.twig' with {'nodes' : nodes, 'parent_node' : parent_node} %}
+            {% endblock %}
+        </div>
+        <div class="col-md-9" style="margin-top:5px">
+            {% block dms_documents %}
+            {% endblock %}
+        </div>
+    </div>
+    {% block dms_actions %}
+        {% include 'ErichardDmsBundle:Sonata/Node:_actions.html.twig' %}
+    {% endblock %}
+{% endblock %}

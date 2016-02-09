@@ -1,20 +1,36 @@
 <?php
+/**
+ * Created by PhpStorm.
+ * User: d.galaup
+ * Date: 22/01/2016
+ * Time: 14:48
+ */
 
 namespace Erichard\DmsBundle\Controller;
 
 use Erichard\DmsBundle\Entity\DocumentNode;
-use Erichard\DmsBundle\Entity\DocumentNodeAuthorization;
-use Erichard\DmsBundle\Entity\DocumentNodeMetadata;
+use Erichard\DmsBundle\Entity\DocumentNodeMetadataLnk;
 use Erichard\DmsBundle\Event\DmsEvents;
 use Erichard\DmsBundle\Event\DmsNodeEvent;
-use Erichard\DmsBundle\Security\Acl\Permission\DmsMaskBuilder;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
+/**
+ * Class NodeController
+ *
+ * @package Erichard\DmsBundle\Controller
+ */
 class NodeController extends Controller
 {
+    /**
+     * listAction
+     *
+     * @param string $node
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
     public function listAction($node)
     {
         $documentNode = $this->findNodeOrThrowError($node);
@@ -33,24 +49,36 @@ class NodeController extends Controller
             $this->get('event_dispatcher')->dispatch(DmsEvents::NODE_ACCESS, $event);
         }
 
-        return $this->render('ErichardDmsBundle:Node:list.html.twig', array(
+        return $this->render('ErichardDmsBundle:Standard/Node:list.html.twig', array(
             'node'       => $documentNode,
             'mode'       => $this->get('request')->query->get('mode', 'table'),
-            'show_nodes' => $this->container->getParameter('dms.workspace.show_nodes')
+            'show_nodes' => $this->container->getParameter('dms.workspace.show_nodes'),
         ));
     }
 
+    /**
+     * indexAction
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
     public function indexAction()
     {
         $dmsManager = $this->get('dms.manager');
 
-        $response = $this->render('ErichardDmsBundle:Node:index.html.twig', array(
-            'nodes' => $dmsManager->getRoots()
+        $response = $this->render('ErichardDmsBundle:Standard/Node:index.html.twig', array(
+            'nodes' => $dmsManager->getRoots(),
         ));
 
         return $response;
     }
 
+    /**
+     * addAction
+     *
+     * @param string $node
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
     public function addAction($node)
     {
         $documentNode = $this->findNodeOrThrowError($node);
@@ -62,17 +90,21 @@ class NodeController extends Controller
             $this->get('event_dispatcher')->dispatch(DmsEvents::NODE_ADD, $event);
         }
 
-        return $this->render('ErichardDmsBundle:Node:add.html.twig', array(
+        return $this->render('ErichardDmsBundle:Standard/Node:add.html.twig', array(
             'node' => $documentNode,
-            'form' => $form->createView()
+            'form' => $form->createView(),
         ));
     }
 
+    /**
+     * editAction
+     *
+     * @param string $node
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
     public function editAction($node)
     {
-        $request = $this->get('request');
-        $this->setCurrentTranslation($request->get('_translation', \Locale::getDefault()));
-
         $documentNode = $this->findNodeOrThrowError($node);
 
         $this->get('dms.manager')->getNodeMetadatas($documentNode);
@@ -84,15 +116,22 @@ class NodeController extends Controller
             $this->get('event_dispatcher')->dispatch(DmsEvents::NODE_EDIT, $event);
         }
 
-        return $this->render('ErichardDmsBundle:Node:edit.html.twig', array(
+        return $this->render('ErichardDmsBundle:Standard/Node:edit.html.twig', array(
             'node' => $documentNode,
-            'form' => $form->createView()
+            'form' => $form->createView(),
         ));
     }
 
+    /**
+     * createAction
+     *
+     * @param string $node
+     *
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     */
     public function createAction($node)
     {
-        $em = $this->get('doctrine')->getManager();
+        $emn = $this->get('doctrine')->getManager();
         $parentNode = $this->findNodeOrThrowError($node);
 
         $newNode    = new DocumentNode();
@@ -102,26 +141,26 @@ class NodeController extends Controller
         $form->bind($this->get('request'));
 
         if (!$form->isValid()) {
-            $response = $this->render('ErichardDmsBundle:Node:add.html.twig', array(
+            $response = $this->render('ErichardDmsBundle:Standard/Node:add.html.twig', array(
                 'node' => $parentNode,
-                'form' => $form->createView()
+                'form' => $form->createView(),
             ));
         } else {
 
             $metadatas = $form->get('metadatas')->getData();
             foreach ($metadatas as $metaName => $metaValue) {
                 if (null !== $metaValue) {
-                    $metadata = new DocumentNodeMetadata(
-                        $em->getRepository('Erichard\DmsBundle\Entity\Metadata')->findOneByName($metaName)
+                    $metadata = new DocumentNodeMetadataLnk(
+                        $emn->getRepository('Erichard\DmsBundle\Entity\Metadata')->findOneByName($metaName)
                     );
                     $metadata->setValue($metaValue);
                     $newNode->addMetadata($metadata);
-                    $em->persist($metadata);
+                    $emn->persist($metadata);
                 }
             }
 
-            $em->persist($newNode);
-            $em->flush();
+            $emn->persist($newNode);
+            $emn->flush();
 
             if ($this->get('event_dispatcher')->hasListeners(DmsEvents::NODE_CREATE)) {
                 $event = new DmsNodeEvent($newNode);
@@ -136,23 +175,29 @@ class NodeController extends Controller
         return $response;
     }
 
+    /**
+     * updateAction
+     *
+     * @param string $node
+     *
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     */
     public function updateAction($node)
     {
-        $request = $this->get('request');
 
         $documentNode = $this->findNodeOrThrowError($node);
 
         $form = $this->createForm('dms_node', $documentNode);
-        $form->bind($this->get('request'));
+        $form->submit($this->get('request'));
 
         if (!$form->isValid()) {
-            $response = $this->render('ErichardDmsBundle:Node:edit.html.twig', array(
+            $response = $this->render('ErichardDmsBundle:Standard/Node:edit.html.twig', array(
                 'node' => $documentNode,
-                'form' => $form->createView()
+                'form' => $form->createView(),
             ));
         } else {
 
-            $em = $this->get('doctrine')->getManager();
+            $emn = $this->get('doctrine')->getManager();
 
             $metadatas = $form->get('metadatas')->getData();
             foreach ($metadatas as $metaName => $metaValue) {
@@ -160,14 +205,14 @@ class NodeController extends Controller
                 if (empty($metaValue)) {
                     if ($metadata = $documentNode->getMetadata($metaName)) {
                         $documentNode->removeMetadataByName($metaName);
-                        $em->remove($metadata);
+                        $emn->remove($metadata);
                     }
                     continue;
                 }
 
                 if (!$documentNode->hasMetadata($metaName)) {
-                    $metadata = new DocumentNodeMetadata(
-                        $em->getRepository('Erichard\DmsBundle\Entity\Metadata')->findOneByName($metaName)
+                    $metadata = new DocumentNodeMetadataLnk(
+                        $emn->getRepository('Erichard\DmsBundle\Entity\Metadata')->findOneByName($metaName)
                     );
                     $metadata->setValue($metaValue);
                     $documentNode->addMetadata($metadata);
@@ -179,11 +224,11 @@ class NodeController extends Controller
                     ->setValue($metaValue)
                 ;
 
-                $em->persist($documentNode->getMetadata($metaName));
+                $emn->persist($documentNode->getMetadata($metaName));
             }
 
-            $em->persist($documentNode);
-            $em->flush();
+            $emn->persist($documentNode);
+            $emn->flush();
 
             if ($this->get('event_dispatcher')->hasListeners(DmsEvents::NODE_UPDATE)) {
                 $event = new DmsNodeEvent($documentNode);
@@ -198,16 +243,23 @@ class NodeController extends Controller
         return $response;
     }
 
+    /**
+     * deleteAction
+     *
+     * @param string $node
+     *
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     */
     public function deleteAction($node)
     {
         $documentNode = $this->findNodeOrThrowError($node);
 
         $redirectUrl = $this->generateUrl('erichard_dms_node_list', array('node' => $documentNode->getParent()->getSlug()));
 
-        $em = $this->get('doctrine')->getManager();
-        $em->refresh($documentNode);
-        $em->remove($documentNode);
-        $em->flush();
+        $emn = $this->get('doctrine')->getManager();
+        $emn->refresh($documentNode);
+        $emn->remove($documentNode);
+        $emn->flush();
 
         if ($this->get('event_dispatcher')->hasListeners(DmsEvents::NODE_DELETE)) {
             $event = new DmsNodeEvent($documentNode);
@@ -219,201 +271,29 @@ class NodeController extends Controller
         return $this->redirect($redirectUrl);
     }
 
+    /**
+     * removeAction
+     *
+     * @param string $node
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
     public function removeAction($node)
     {
         $documentNode = $this->findNodeOrThrowError($node);
 
-        return $this->render('ErichardDmsBundle:Node:remove.html.twig', array(
+        return $this->render('ErichardDmsBundle:Standard/Node:remove.html.twig', array(
             'node' => $documentNode,
         ));
     }
 
-    public function manageAction($node)
-    {
-        $documentNode = $this->findNodeOrThrowError($node);
-
-        $roles = $this->container->get('dms.security.role_provider')->getRoles();
-        $acl = $this->container->get('dms.security.access.control_list');
-
-        $reflClass = new \ReflectionClass('Erichard\DmsBundle\Security\Acl\Permission\DmsMaskBuilder');
-
-        $authorizations = array();
-        foreach ($roles as $role) {
-            $authorizationsMask = $acl
-                ->getDocumentNodeAuthorizationMask($documentNode, array($role))
-            ;
-
-            $authorizations[$role] = array(
-                'VIEW'                 => 0,
-                'DOCUMENT_ADD'         => 0,
-                'DOCUMENT_EDIT'        => 0,
-                'DOCUMENT_DELETE'      => 0,
-                'DOCUMENT_DOWNLOAD'    => 0,
-                'NODE_ADD'             => 0,
-                'NODE_EDIT'            => 0,
-                'NODE_DELETE'          => 0,
-                'NODE_DOWNLOAD'        => 0,
-                'MANAGE'               => 0,
-            );
-
-            foreach ($authorizations[$role] as $permission => $value) {
-                $permissionBit = $reflClass->getConstant('MASK_'.$permission);
-                $authorizations[$role][$permission] = $permissionBit === ($authorizationsMask & $permissionBit);
-            }
-        }
-
-        if ($this->get('event_dispatcher')->hasListeners(DmsEvents::NODE_MANAGE)) {
-            $event = new DmsNodeEvent($documentNode);
-            $this->get('event_dispatcher')->dispatch(DmsEvents::NODE_MANAGE, $event);
-        }
-
-        return $this->render('ErichardDmsBundle:Node:manage.html.twig', array(
-            'node' => $documentNode,
-            'roles' => $roles,
-            'authorizations' => $authorizations
-        ));
-    }
-
-    public function resetAction($node)
-    {
-        $documentNode = $this->findNodeOrThrowError($node);
-
-        if (!$this->container->get('security.context')->isGranted('MANAGE', $documentNode)) {
-            throw AccessDeniedHttpException();
-        }
-
-        $reset = $this->container->get('request')->query->get('reset');
-
-        $documentNode->setResetPermission($reset);
-
-        $em = $this->container->get('doctrine')->getManager();
-        $em->persist($documentNode);
-        $em->flush();
-
-        if ($this->get('event_dispatcher')->hasListeners(DmsEvents::NODE_RESET_PERMISSION)) {
-            $event = new DmsNodeEvent($documentNode);
-            $this->get('event_dispatcher')->dispatch(DmsEvents::NODE_RESET_PERMISSION, $event);
-        }
-
-        return $this->redirect($this->generateUrl('erichard_dms_manage_node', array('node' => $node)));
-    }
-
-    public function manageRoleAction($node, $role)
-    {
-        $documentNode = $this->findNodeOrThrowError($node);
-
-        $roles = $this->container->get('dms.security.role_provider')->getRoles();
-
-        if (!in_array($role, $roles)) {
-            throw new AccessDeniedException(sprintf("The role %s is not managed by the DMS.", $role));
-        }
-
-        $authorization = $this
-            ->container
-            ->get('doctrine')
-            ->getManager()
-            ->createQuery('SELECT a FROM Erichard\DmsBundle\Entity\DocumentNodeAuthorization a WHERE a.node = :node AND a.role = :role')
-            ->setParameter('node', $documentNode->getId())
-            ->setParameter('role', $role)
-            ->getOneOrNullResult()
-        ;
-
-        $reflClass = new \ReflectionClass('Erichard\DmsBundle\Security\Acl\Permission\DmsMaskBuilder');
-
-        $request = $this->getRequest();
-        if ($request->isMethod('POST')) {
-            $permissions = $request->request->get('permissions');
-
-            $allow = 0;
-            $deny  = 0;
-
-            foreach ($permissions as $permission => $value) {
-                $bitValue = $reflClass->getConstant('MASK_'.$permission);
-
-                if ($value === '1') {
-                    $allow += $bitValue ;
-                } elseif ($value === '-1') {
-                    $deny += $bitValue;
-                }
-            }
-
-            if (null === $authorization) {
-                $authorization = new DocumentNodeAuthorization();
-                $authorization
-                    ->setNode($documentNode)
-                    ->setRole($role)
-                ;
-            }
-            $authorization
-                ->setAllow($allow)
-                ->setDeny($deny)
-            ;
-            $em = $this->container->get('doctrine')->getManager();
-            $em->persist($authorization);
-            $em->flush();
-
-            if ($this->get('event_dispatcher')->hasListeners(DmsEvents::NODE_CHANGE_PERMISSION)) {
-                $event = new DmsNodeEvent($documentNode);
-                $this->get('event_dispatcher')->dispatch(DmsEvents::NODE_CHANGE_PERMISSION, $event);
-            }
-        }
-
-        $basePermissions = array(
-            'VIEW'                 => 0,
-            'DOCUMENT_ADD'         => 0,
-            'DOCUMENT_EDIT'        => 0,
-            'DOCUMENT_DELETE'      => 0,
-            'DOCUMENT_DOWNLOAD'    => 0,
-            'NODE_ADD'             => 0,
-            'NODE_EDIT'            => 0,
-            'NODE_DELETE'          => 0,
-            'NODE_DOWNLOAD'        => 0,
-            'MANAGE'               => 0,
-        );
-
-        $parentAuthorizations = $basePermissions;
-
-        if (null !== $documentNode->getParent() && !$documentNode->getResetPermission()) {
-            $parentAuthorizationsMask = $this->container->get('dms.security.access.control_list')->getDocumentNodeAuthorizationMask($documentNode->getParent(), array($role));
-
-            foreach ($parentAuthorizations as $permission => $value) {
-                $permissionBit = $reflClass->getConstant('MASK_'.$permission);
-                $parentAuthorizations[$permission] = $permissionBit === ($parentAuthorizationsMask & $permissionBit);
-            }
-        }
-
-        $permissions = $basePermissions;
-        if (null !== $authorization) {
-            $allowMask = $authorization->getAllow();
-            $denyMask = $authorization->getDeny();
-            foreach ($permissions as $permission => $value) {
-                $permissionBit = $reflClass->getConstant('MASK_'.$permission);
-                if ($permissionBit === ($allowMask & $permissionBit )) {
-                    $permissions[$permission] = 1;
-                } elseif ($permissionBit === ($denyMask & $permissionBit )) {
-                    $permissions[$permission] = -1;
-                }
-            }
-        }
-
-        $authorizations = $basePermissions;
-
-        $authorizationsMask = $this->container->get('dms.security.access.control_list')->getDocumentNodeAuthorizationMask($documentNode, array($role));
-
-        foreach ($authorizations as $permission => $value) {
-            $permissionBit = $reflClass->getConstant('MASK_'.$permission);
-            $authorizations[$permission] = $permissionBit === ($authorizationsMask & $permissionBit);
-        }
-
-        return $this->render('ErichardDmsBundle:Node:manageRole.html.twig', array(
-            'node'                 => $documentNode,
-            'role'                 => $role,
-            'parentAuthorizations' => $parentAuthorizations,
-            'permissions'          => $permissions,
-            'finalAuthorizations'  => $authorizations,
-        ));
-    }
-
+    /**
+     * findNodeOrThrowError
+     *
+     * @param string $nodeSlug
+     *
+     * @return DocumentNode
+     */
     public function findNodeOrThrowError($nodeSlug)
     {
         try {
@@ -430,15 +310,5 @@ class NodeController extends Controller
         }
 
         return $node;
-    }
-
-    /**************************************************************************
-     * I18n support
-     **************************************************************************/
-    protected function setCurrentTranslation($translation)
-    {
-        $this->get('dms.manager')->setLocale($translation);
-
-        return $this;
     }
 }

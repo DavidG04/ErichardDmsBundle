@@ -1,0 +1,28 @@
+{% extends dms_layout|default('ErichardDmsBundle:Standard/Node:layout.html.twig') %}
+
+{% block dms_documents %}
+
+    <h1>Add a new folder</h1>
+
+    <form class="form-horizontal" action="{{ path('erichard_dms_create_node', {'node' : node.slug}) }}" method="POST">
+
+        {{ form_widget(form._token) }}
+        {{ form_errors(form) }}
+
+        {{ form_row(form.name, {'form_type': 'horizontal'}) }}
+        {{ form_row(form.enabled, {'form_type': 'horizontal'}) }}
+
+        {% for metadata in form.metadatas %}
+            {{ form_row(metadata, {
+                'form_type': 'horizontal',
+                'value' : node.getMetadata(metadata.vars.name).value
+            }) }}
+        {% endfor %}
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Save changes</button>
+          <button type="button" class="btn">Cancel</button>
+        </div>
+    </form>
+
+{% endblock %}

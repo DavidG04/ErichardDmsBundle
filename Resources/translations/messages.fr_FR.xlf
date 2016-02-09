@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" datatype="plaintext" original="" >
+        <body>
+            <trans-unit id="new_node">
+                <source>new_node</source>
+                <target>Nouveau dossier</target>
+            </trans-unit>
+            <trans-unit id="new_document">
+                <source>new_document</source>
+                <target>Nouveaux documents</target>
+            </trans-unit>
+            <trans-unit id="node_name">
+                <source>node_name</source>
+                <target>Nom du dossier</target>
+            </trans-unit>
+            <trans-unit id="move_node">
+                <source>move_node</source>
+                <target>Déplacer le dossier vers :</target>
+            </trans-unit>
+            <trans-unit id="move_document">
+                <source>move_document</source>
+                <target>Déplacer le fichier vers :</target>
+            </trans-unit>
+            <trans-unit id="file_area_label">
+                <source>file_area_label</source>
+                <target>Fichiers à envoyer</target>
+            </trans-unit>
+            <trans-unit id="upload_label">
+                <source>upload_label</source>
+                <target>Envoyer</target>
+            </trans-unit>
+            <trans-unit id="select_files_label">
+                <source>select_files_label</source>
+                <target>Sélectionnez les fichiers</target>
+            </trans-unit>
+            <trans-unit id="validate_label">
+                <source>validate_label</source>
+                <target>Valider les documents</target>
+            </trans-unit>
+            <trans-unit id="success_message">
+                <source>success_message</source>
+                <target>Les fichiers ont bien été envoyés. Vous pouvez valider l'ajout des documents</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

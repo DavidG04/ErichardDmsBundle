@@ -1,0 +1,67 @@
+{% set document = object %}
+<div class="row" style="margin: -20px 0 20px 0;">
+    <div class="col-md-7">
+        <h3>{{ 'name_label'|trans({}, 'ErichardDmsBundle') }}</h3>
+        <div class="well">
+            {{ document.name}}
+        </div>
+        <div style="min-height:466px">
+            {% for metadata in document.getMetadatas %}
+                <h3>{{ (metadata.getMetadata().getLabel()|raw)|trans({}, 'ErichardDmsBundle') }}</h3>
+                <div class="well">
+                    {{ metadata.getValue()|raw }}
+                </div>
+            {% endfor %}
+        </div>
+        <div class="well well-small form-actions">
+            {% if is_granted(parameter('dms.permission.roles_document').download) or is_granted(parameter('dms.permission.super_admin_role')) %}
+                <a href="#" class="download_ajax_{{ document.slug }} no_loader btn btn-success">
+                    <i class="fa fa-download"></i> {{ 'download_documents'|trans({}, 'ErichardDmsBundle') }}
+                </a>
+                <script>
+                    $('.download_ajax_{{ document.slug }}').on('click', function(){
+                        location.href = '{{ (path('admin_erichard_dms_document_download', {'document': document.slug, 'node' : node.slug, 'pid' : app.request.get('pid'), 'pcode' : app.request.get('pcode')}))|raw }}';
+                    });
+                </script>
+            {% endif %}
+            {% if is_granted(parameter('dms.permission.roles_document').edit) or is_granted(parameter('dms.permission.super_admin_role')) %}
+                <a href="{{ path('admin_erichard_dms_document_edit', {'id' : document.id, 'document': document.slug, 'node' : node.slug, 'pid' : app.request.get('pid'), 'pcode' : app.request.get('pcode')}) }}" class="no_loader btn btn-success">
+                    <i class="fa fa-pencil-square-o"></i> {{ 'edit_label'|trans({}, 'ErichardDmsBundle') }}
+                </a>
+            {% endif %}
+            {% if is_granted(parameter('dms.permission.roles_document').delete) or is_granted(parameter('dms.permission.super_admin_role')) %}
+                {{ 'or_label'|trans({}, 'ErichardDmsBundle') }}
+                <a href="{{ path('admin_erichard_dms_document_delete', {'id' : document.id, 'document': document.slug, 'node' : node.slug, 'pid' : app.request.get('pid'), 'pcode' : app.request.get('pcode')}) }}" class="no_loader btn btn-danger">
+                    <i class="fa fa-minus-circle"></i> {{ 'delete_label'|trans({}, 'ErichardDmsBundle') }}
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-md-5">
+        <h3>{{ 'preview_label'|trans({}, 'ErichardDmsBundle') }}</h3>
+        <div class="well" style="min-height: 640px;">
+            <img class="img-polaroid" src="{{ sonataThumbUrl(document, parameter('dms.show.image_size')) }}" alt="{{ document.name }}">
+        </div>
+    </div>
+
+    {#<div class="span4">#}
+        {#<div class="well">#}
+
+        {#<ul class="nav nav-list">#}
+            {#<li class="nav-header">Actions</li>#}
+            {#{% if is_granted('DOCUMENT_DOWNLOAD', document) %}#}
+            {#<li><a href="&#123;&#35;{{ path('erichard_dms_download_document', { 'node': node.slug, 'document': document.slug }) }}&#35;&#125;"><i class="fa fa-download-alt"></i>Download</a></li>#}
+            {#{% endif %}#}
+            {#{% if is_granted('DOCUMENT_EDIT', document) %}#}
+            {#<li><a href="&#123;&#35;{{ path('erichard_dms_edit_document', { 'node': node.slug, 'document': document.slug }) }}&#35;&#125;"><i class="fa fa-edit"></i>Edit</a></li>#}
+            {#{% endif %}#}
+            {#{% if is_granted('DOCUMENT_DELETE', document) %}#}
+            {#<li><a href="&#123;&#35;{{ path('erichard_dms_remove_document', { 'node': node.slug, 'document': document.slug }) }}&#35;&#125;"><i class="fa fa-trash"></i>Delete</a></li>#}
+            {#{% endif %}#}
+            {#<li class="nav-header">Partage</li>#}
+            {#<li><a href=""><i class="fa fa-envelope"></i>Email</a></li>#}
+            {#<li><a href=""><i class="fa fa-external-link"></i>Link</a></li>#}
+        {#</ul>#}
+        {#</div>#}
+    {#</div>#}
+</div>

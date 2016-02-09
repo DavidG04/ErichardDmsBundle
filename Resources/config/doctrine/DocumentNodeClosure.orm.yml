@@ -1,5 +1,6 @@
 Erichard\DmsBundle\Entity\DocumentNodeClosure:
     type: entity
+    table: dms__document_node_closure
     id:
         id:
             type: integer

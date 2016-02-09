@@ -1,70 +1,80 @@
 <?php
+/**
+ * Created by PhpStorm.
+ * User: d.galaup
+ * Date: 22/01/2016
+ * Time: 14:48
+ */
 
 namespace Erichard\DmsBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Erichard\DmsBundle\DocumentInterface;
-use Erichard\DmsBundle\DocumentNodeInterface;
-use Erichard\DmsBundle\Entity\Behavior\TranslatableEntity;
 use Gedmo\Mapping\Annotation as Gedmo;
-use Gedmo\Translatable\Translatable;
 
-class DocumentNode implements DocumentNodeInterface, Translatable
+/**
+ * Class DocumentNode
+ *
+ * @package Erichard\DmsBundle\Entity
+ */
+class DocumentNode extends AbstractDms implements DocumentNodeInterface
 {
-    use TranslatableEntity;
-
-    protected $id;
-    protected $parent;
+    /**
+     * Nodes
+     *
+     * @var ArrayCollection
+     */
     protected $nodes;
-    protected $documents;
-    protected $name;
-    protected $slug;
-    protected $depth;
-    protected $enabled;
-    protected $metadatas;
-    protected $resetPermission;
-    protected $createdAt;
-    protected $updatedAt;
 
+    /**
+     * Docuements
+     *
+     * @var ArrayCollection
+     */
+    protected $documents;
+
+    /**
+     * Depth
+     *
+     * @var int
+     */
+    protected $depth;
+
+    /**
+     * uniqReference for gedable
+     *
+     * @var string
+     */
+    protected $uniqRef;
+
+    /**
+     * is user Node
+     *
+     * @var boolean
+     */
+    protected $userNode;
+
+    /**
+     * DocumentNode constructor.
+     */
     public function __construct()
     {
+        parent::__construct();
         $this->documents = new ArrayCollection();
         $this->nodes     = new ArrayCollection();
-        $this->metadatas = new ArrayCollection();
-        $this->resetPermission = false;
-        $this->enabled   = true;
         $this->depth     = 1;
     }
 
-    public function setId($id)
-    {
-        $this->id = $id;
-
-        return $this;
-    }
-
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    public function getParent()
-    {
-        return $this->parent;
-    }
-
-    public function setParent(DocumentNodeInterface $parent = null)
-    {
-        $this->parent = $parent;
-
-        return $this;
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     public function getDocuments()
     {
         return $this->documents;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function addDocument(DocumentInterface $document)
     {
         if (!$this->documents->contains($document)) {
@@ -75,6 +85,9 @@ class DocumentNode implements DocumentNodeInterface, Translatable
         return $this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function removeDocument(DocumentInterface $document)
     {
         if ($this->documents->contains($document)) {
@@ -84,11 +97,17 @@ class DocumentNode implements DocumentNodeInterface, Translatable
         return $this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getNodes()
     {
         return $this->nodes;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function addNode(DocumentNodeInterface $node)
     {
         if (!$this->nodes->contains($node)) {
@@ -99,6 +118,9 @@ class DocumentNode implements DocumentNodeInterface, Translatable
         return $this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function removeNode(DocumentNodeInterface $node)
     {
         if ($this->nodes->contains($node)) {
@@ -108,6 +130,9 @@ class DocumentNode implements DocumentNodeInterface, Translatable
         return $this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getPath()
     {
         $path = null !== $this->parent ? $this->parent->getPath() : new ArrayCollection();
@@ -116,30 +141,9 @@ class DocumentNode implements DocumentNodeInterface, Translatable
         return $path;
     }
 
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    public function setName($name)
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    public function getSlug()
-    {
-        return $this->slug;
-    }
-
-    public function setSlug($slug)
-    {
-        $this->slug = $slug;
-
-        return $this;
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     public function setDepth($depth)
     {
         $this->depth = $depth;
@@ -147,142 +151,62 @@ class DocumentNode implements DocumentNodeInterface, Translatable
         return $this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getDepth()
     {
         return $this->depth;
     }
 
-    public function setEnabled($enabled)
-    {
-        $this->enabled = $enabled;
-
-        return $this;
-    }
-
-    public function isEnabled()
-    {
-        return $this->enabled;
-    }
-
-    public function getResetPermission()
-    {
-        return $this->resetPermission;
-    }
-
-    public function setResetPermission($resetPermission)
-    {
-        $this->resetPermission = $resetPermission;
-
-        return $this;
-    }
-
-    public function getMetadatas()
-    {
-        return $this->metadatas;
-    }
-
-    public function addMetadata(DocumentNodeMetadata $metadata)
-    {
-        if (!$this->hasMetadata($metadata->getMetadata()->getName())) {
-            $metadata->setNode($this);
-            $this->metadatas->add($metadata);
-        }
-
-        return $this;
-    }
-
-    public function getMetadata($name)
-    {
-        foreach ($this->metadatas as $m) {
-            if ($m->getMetadata()->getName() === $name) {
-                return $m;
-            }
-        }
-
-        return false;
-    }
-
-    public function removeMetadata(DocumentNodeMetadata $metadata)
-    {
-        if ($this->metadatas->contains($metadata)) {
-            $this->metadatas->removeElement($metadata);
-        }
-
-        return $this;
-    }
-
-    public function removeMetadataByName($metadataName)
-    {
-        if ($this->hasMetadata($metadataName)) {
-            $this->removeMetadata($this->getMetadata($metadataName));
-        }
-
-        return $this;
-    }
-
-    public function hasMetadata($name)
-    {
-        foreach ($this->metadatas as $m) {
-            if ($m->getMetadata()->getName() === $name) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public function removeEmptyMetadatas($strict = false)
-    {
-        foreach ($this->metadatas as $m) {
-            if (($strict && null === $m->getId()) || null === $m->getValue()) {
-                $this->metadatas->removeElement($m);
-            }
-        }
-    }
-
     /**
-     * Sets createdAt.
-     *
-     * @param DateTime $createdAt
-     * @return $this
+     * {@inheritDoc}
      */
-    public function setCreatedAt(\DateTime $createdAt)
+    public function setUniqRef($uniqRef)
     {
-        $this->createdAt = $createdAt;
+        $this->uniqRef = $uniqRef;
 
         return $this;
     }
 
     /**
-     * Returns createdAt.
-     *
-     * @return DateTime
+     * {@inheritDoc}
      */
-    public function getCreatedAt()
+    public function getUniqRef()
     {
-        return $this->createdAt;
+        return $this->uniqRef;
     }
 
     /**
-     * Sets updatedAt.
-     *
-     * @param DateTime $updatedAt
-     * @return $this
+     * {@inheritDoc}
      */
-    public function setUpdatedAt(\DateTime $updatedAt)
+    public function setUserNode($userNode)
     {
-        $this->updatedAt = $updatedAt;
+        $this->userNode = $userNode;
 
         return $this;
     }
 
     /**
-     * Returns updatedAt.
-     *
-     * @return DateTime
+     * {@inheritDoc}
      */
-    public function getUpdatedAt()
+    public function isUserNode()
     {
-        return $this->updatedAt;
+        return $this->userNode;
+    }
+
+    /**
+     * __toString
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        $name = $this->name;
+        if (!$name) {
+            $name = 'new_node';
+        }
+
+        return $name;
     }
 }

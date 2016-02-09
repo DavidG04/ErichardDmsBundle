@@ -1,9 +1,7 @@
 Erichard\DmsBundle\Entity\Document:
     type: entity
-    repositoryClass: Erichard\DmsBundle\Entity\DocumentRepository
-    gedmo:
-        translation:
-            locale: locale
+    repositoryClass: Erichard\DmsBundle\Repository\DocumentRepository
+    table: dms__document
     indexes:
         document_slug_idx:
             columns: [ slug ]
@@ -21,8 +19,6 @@ Erichard\DmsBundle\Entity\Document:
             type: string
         name:
             type: string
-            gedmo:
-                - translatable
         slug:
             type: string
             length: 128
@@ -62,9 +58,8 @@ Erichard\DmsBundle\Entity\Document:
                 onDelete: CASCADE
     oneToMany:
         metadatas:
-            targetEntity: Erichard\DmsBundle\Entity\DocumentMetadata
+            targetEntity: Erichard\DmsBundle\Entity\DocumentMetadataLnk
             mappedBy: document
         aliases:
             targetEntity: Erichard\DmsBundle\Entity\Document
             mappedBy: parent
-

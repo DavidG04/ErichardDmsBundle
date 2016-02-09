@@ -1,6 +1,6 @@
 {
     "name": "erichard/dms-bundle",
-    "description": "A Document Management System for Symfony 2",
+    "description": "A Document Management System for Symfony 2 and Sonata",
     "type": "symfony-bundle",
     "require": {
         "symfony/framework-bundle": "~2.3",

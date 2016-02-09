@@ -1,0 +1,28 @@
+<h2 style="margin-left: 5px">
+    {% if node is defined %}
+        {% set currenNode = node %}
+        {% if node.getSlug() == parent_node.getSlug() %}
+            <i class="fa fa-home"></i> {{ 'home'|trans({}, 'ErichardDmsBundle') }}
+        {% else %}
+            <i class="fa fa-{% if node.isUserNode is sameas(true) %}user{% else %}folder-open{% endif %}"></i> {{ node.name }}
+        {% endif %}
+    {% endif %}
+</h2>
+<ul class="nav nav-stacked" style="padding-left: 15px;margin-bottom:20px">
+    {% for node in nodes %}
+        <li>
+            <div style="height:40px" class="list-group-item">
+                {% if is_granted(parameter('dms.permission.roles_node').list) or is_granted(parameter('dms.permission.super_admin_role')) %}
+                    <a style="color:#000;" class="pull-left" href="{{ path('admin_erichard_dms_documentnode_list', {'node' : node.slug, 'pid' : app.request.get('pid'), 'pcode' : app.request.get('pcode') }) }}">
+                        <i class="fa fa-{% if node.isUserNode is sameas(true) %}user{% else %}folder{% endif %}"></i> {{ node.name }}
+                    </a>
+                {% endif %}
+                {% if node.uniqRef is null and (is_granted(parameter('dms.permission.roles_node').edit) or is_granted(parameter('dms.permission.super_admin_role'))) %}
+                    <a style="color:#000;" class="pull-right" href="{{ path('admin_erichard_dms_documentnode_edit', {'id' : node.id, 'node' : node.parent.slug, 'pid' : app.request.get('pid'), 'pcode' : app.request.get('pcode') })}}">
+                        <i class="fa fa-pencil-square-o"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </li>
+    {% endfor %}
+</ul>

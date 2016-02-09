@@ -1,0 +1,5 @@
+{% extends dms_layout|default('ErichardDmsBundle:Sonata/Node:layout.html.twig') %}
+
+{% block dms_documents %}
+    {% include 'ErichardDmsBundle:Sonata/Document:_document_show.html.twig' with {'object' : object} %}
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends dms_layout|default('ErichardDmsBundle:Sonata/Node:ajax_layout.html.twig') %}
+
+{% block dms_documents %}
+    {% include 'SonataAdminBundle:CRUD:base_edit_form.html.twig' %}
+    <script>
+        $('.modal-content').find('form > .form-actions').removeClass('well').removeClass('well-small');
+        $('.modal-content').find('form > .form-actions > button[name="btn_create"]').html('<i class="fa fa-save"></i> {{ 'validate_label'|trans() }}');
+        $('.modal-content').find('form > .form-actions > button[name="btn_create"]').hide();
+        $('.modal-content').find('form > .form-actions').appendTo('.sonata-ba-collapsed-fields');
+    </script>
+{% endblock %}

@@ -1,4 +1,10 @@
 <?php
+/**
+ * Created by PhpStorm.
+ * User: d.galaup
+ * Date: 22/01/2016
+ * Time: 14:48
+ */
 
 namespace Erichard\DmsBundle\Command;
 
@@ -7,8 +13,16 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * Class GenerateThumbnailsCommand
+ *
+ * @package Erichard\DmsBundle\Command
+ */
 class GenerateThumbnailsCommand extends ContainerAwareCommand
 {
+    /**
+     * configure
+     */
     public function configure()
     {
         $this
@@ -18,6 +32,14 @@ class GenerateThumbnailsCommand extends ContainerAwareCommand
         ;
     }
 
+    /**
+     * execute
+     *
+     * @param InputInterface  $input
+     * @param OutputInterface $output
+     *
+     * @return mixed
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $sizes = $input->getArgument('sizes');
@@ -26,9 +48,7 @@ class GenerateThumbnailsCommand extends ContainerAwareCommand
             ->getContainer()
             ->get('doctrine')
             ->getManager()
-            ->createQuery('SELECT d FROM Erichard\DmsBundle\Entity\Document d')
-            ->iterate()
-        ;
+            ->createQuery(/** @lang text */'SELECT d FROM Erichard\DmsBundle\Entity\Document d')->iterate();
 
         $dmsManager = $this->getContainer()->get('dms.manager');
 

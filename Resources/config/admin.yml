@@ -1,0 +1,25 @@
+parameters:
+    dms_node_sonata.crud.class: ErichardDmsBundle:SonataNode
+    dms_document_sonata.crud.class: ErichardDmsBundle:SonataDocument
+    dms_node.class: Erichard\DmsBundle\Entity\DocumentNode
+    dms_document.class: Erichard\DmsBundle\Entity\Document
+    dms_node.admin.class: Erichard\DmsBundle\Admin\DocumentNodeAdmin
+    dms_document.admin.class: Erichard\DmsBundle\Admin\DocumentAdmin
+
+services:
+    dms.admin.node:
+        class: %dms_node.admin.class%
+        tags:
+            - { name: sonata.admin, manager_type: orm, audit: false, group: 'dms_label', label: 'home', label_catalogue: "ErichardDmsBundle" }
+        arguments: [null, %dms_node.class%, %dms_node_sonata.crud.class%]
+        calls:
+            - [ setTranslationDomain, [ 'ErichardDmsBundle' ] ]
+            - [ setLabelTranslatorStrategy, [ @sonata.admin.label.strategy.underscore ] ]
+    dms.admin.document:
+        class: %dms_document.admin.class%
+        tags:
+            - { name: sonata.admin, manager_type: orm, audit: false, group: 'dms_label', label: 'document', label_catalogue: "ErichardDmsBundle", show_in_dashboard: false }
+        arguments: [null, %dms_document.class%, %dms_document_sonata.crud.class%]
+        calls:
+            - [ setTranslationDomain, [ 'ErichardDmsBundle' ] ]
+            - [ setLabelTranslatorStrategy, [ @sonata.admin.label.strategy.underscore ] ]

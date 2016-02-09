@@ -1,4 +1,3 @@
-# Tests/Controller/App/config.yml
 imports:
     - { resource: "@ErichardDmsBundle/Resources/config/services.yml" }
 

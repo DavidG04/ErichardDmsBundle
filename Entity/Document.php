@@ -1,45 +1,103 @@
 <?php
+/**
+ * Created by PhpStorm.
+ * User: d.galaup
+ * Date: 22/01/2016
+ * Time: 14:48
+ */
 
 namespace Erichard\DmsBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Erichard\DmsBundle\DocumentInterface;
-use Erichard\DmsBundle\DocumentNodeInterface;
-use Erichard\DmsBundle\Entity\Behavior\TranslatableEntity;
-use Erichard\DmsBundle\Entity\DocumentMetadata;
 use Gedmo\Mapping\Annotation as Gedmo;
-use Gedmo\Translatable\Translatable;
 
-class Document implements DocumentInterface, Translatable
+/**
+ * Class Document
+ *
+ * @package Erichard\DmsBundle\Entity
+ */
+class Document extends AbstractDms implements DocumentInterface
 {
-    use TranslatableEntity;
-
-    protected $id;
+    /**
+     * node
+     *
+     * @var DocumentNodeInterface
+     */
     protected $node;
-    protected $name;
+
+    /**
+     * filename
+     *
+     * @var string
+     */
     protected $filename;
+
+    /**
+     * thumbnail
+     *
+     * @var string
+     */
     protected $thumbnail;
+
+    /**
+     * original name
+     *
+     * @var string
+     */
     protected $originalName;
+
+    /**
+     * mimetype
+     *
+     * @var string
+     */
     protected $mimeType;
+
+    /**
+     * type
+     *
+     * @var string
+     */
     protected $type;
-    protected $slug;
+
+    /**
+     * enabled
+     *
+     * @var bool
+     */
     protected $enabled;
-    protected $metadatas;
-    protected $createdAt;
-    protected $updatedAt;
-    protected $parent;
+
+    /**
+     * aliases
+     *
+     * @var ArrayCollection
+     */
     protected $aliases;
+
+    /**
+     * filesize
+     *
+     * @var string
+     */
     protected $filesize;
 
+    /**
+     * Document constructor.
+     *
+     * @param DocumentNodeInterface $node
+     */
     public function __construct(DocumentNodeInterface $node)
     {
+        parent::__construct();
         $this->node = $node;
         $this->type = DocumentInterface::TYPE_FILE;
         $this->enabled = true;
-        $this->metadatas = new ArrayCollection();
         $this->aliases = new ArrayCollection();
     }
 
+    /**
+     * clone
+     */
     public function __clone()
     {
         $this->id = null;
@@ -48,32 +106,29 @@ class Document implements DocumentInterface, Translatable
         $this->updatedAt = null;
     }
 
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    public function setId($id)
-    {
-        $this->id = $id;
-
-        return $this;
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     public function getContent()
     {
         if (!is_readable($this->filename)) {
-            throw new \RuntimeException(sprintf('The file "%s" is not readable.',$this->filename));
+            throw new \RuntimeException(sprintf('The file "%s" is not readable.', $this->filename));
         }
 
         return file_get_contents($this->filename);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getNode()
     {
         return $this->node;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function setNode(DocumentNodeInterface $node)
     {
         $this->node = $node;
@@ -81,6 +136,9 @@ class Document implements DocumentInterface, Translatable
         return $this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getPath()
     {
         $path = $this->node->getPath();
@@ -89,6 +147,17 @@ class Document implements DocumentInterface, Translatable
         return $path;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function getFilename()
+    {
+        return $this->isLink()? $this->parent->getFilename() : $this->filename;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function setFilename($filename)
     {
         $this->filename = $filename;
@@ -97,11 +166,17 @@ class Document implements DocumentInterface, Translatable
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getMimeType()
     {
         return $this->mimeType;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function setMimeType($mimeType)
     {
         $this->mimeType = $mimeType;
@@ -109,35 +184,17 @@ class Document implements DocumentInterface, Translatable
         return $this;
     }
 
-    public function getFilename()
+    /**
+     * {@inheritDoc}
+     */
+    public function getType()
     {
-        return $this->isLink()? $this->parent->getFilename() : $this->filename;
+        return $this->type;
     }
 
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    public function setName($name)
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    public function getSlug()
-    {
-        return $this->slug;
-    }
-
-    public function setSlug($slug)
-    {
-        $this->slug = $slug;
-
-        return $this;
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     public function setType($type)
     {
         $this->type = $type;
@@ -145,11 +202,17 @@ class Document implements DocumentInterface, Translatable
         return $this;
     }
 
-    public function getType()
+    /**
+     * {@inheritDoc}
+     */
+    public function getOriginalName()
     {
-        return $this->type;
+        return $this->originalName;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function setOriginalName($originalName)
     {
         $this->originalName = $originalName;
@@ -157,11 +220,17 @@ class Document implements DocumentInterface, Translatable
         return $this;
     }
 
-    public function getOriginalName()
+    /**
+     * {@inheritDoc}
+     */
+    public function isEnabled()
     {
-        return $this->originalName;
+        return $this->enabled;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function setEnabled($enabled)
     {
         $this->enabled = $enabled;
@@ -169,80 +238,17 @@ class Document implements DocumentInterface, Translatable
         return $this;
     }
 
-    public function isEnabled()
-    {
-        return $this->enabled;
-    }
-
-    public function getMetadatas()
-    {
-        return $this->metadatas;
-    }
-
-    public function addMetadata(DocumentMetadata $metadata)
-    {
-        if (!$this->hasMetadata($metadata->getMetadata()->getName())) {
-            $metadata->setDocument($this);
-            $this->metadatas->add($metadata);
-        }
-
-        return $this;
-    }
-
-    public function getMetadata($name)
-    {
-        foreach ($this->metadatas as $m) {
-            if ($m->getMetadata()->getName() === $name) {
-                return $m;
-            }
-        }
-
-        return false;
-    }
-
-    public function removeMetadata(DocumentMetadata $metadata)
-    {
-        if ($this->metadatas->contains($metadata)) {
-            $this->metadatas->removeElement($metadata);
-        }
-
-        return $this;
-    }
-
-    public function removeMetadataByName($metadataName)
-    {
-        if ($this->hasMetadata($metadataName)) {
-            $this->removeMetadata($this->getMetadata($metadataName));
-        }
-
-        return $this;
-    }
-
-    public function removeEmptyMetadatas($strict = false)
-    {
-        foreach ($this->metadatas as $m) {
-            if (($strict && null === $m->getId()) || null === $m->getValue()) {
-                $this->metadatas->removeElement($m);
-            }
-        }
-    }
-
-    public function hasMetadata($name)
-    {
-        foreach ($this->metadatas as $m) {
-            if ($m->getMetadata()->getName() === $name) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     public function getAliases()
     {
         return $this->aliases;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function addAlias(DocumentInterface $document)
     {
         if (!$this->aliases->contains($document)) {
@@ -253,6 +259,9 @@ class Document implements DocumentInterface, Translatable
         return $this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function removeAlias(DocumentInterface $document)
     {
         if ($this->aliases->contains($document)) {
@@ -262,21 +271,17 @@ class Document implements DocumentInterface, Translatable
         return $this;
     }
 
-    public function setParent(DocumentInterface $document)
-    {
-        $this->parent = $document;
-    }
-
-    public function getParent()
-    {
-        return $this->parent;
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     public function isLink()
     {
         return $this->parent !== null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getComputedFilename()
     {
         if (null === $this->id) {
@@ -286,69 +291,29 @@ class Document implements DocumentInterface, Translatable
         $reverseId = str_pad($this->id, 8, '0', STR_PAD_LEFT);
         $path = '';
 
-        for ($i = 0; $i < 6; $i+=2) {
-            $path .= substr($reverseId, $i, 2) . DIRECTORY_SEPARATOR;
+        for ($i = 0; $i < 6; $i += 2) {
+            $path .= substr($reverseId, $i, 2).DIRECTORY_SEPARATOR;
         }
 
-        $extension = pathinfo($this->originalName,PATHINFO_EXTENSION);
+        $extension = pathinfo($this->originalName, PATHINFO_EXTENSION);
         $extension = empty($extension)? 'noext' : $extension;
 
-        $path .= $reverseId . '.' . $extension;
+        $path .= $reverseId.'.'.$extension;
 
         return $path;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getExtension()
     {
         return pathinfo($this->originalName, PATHINFO_EXTENSION);
     }
 
     /**
-     * Sets createdAt.
-     *
-     * @param DateTime $createdAt
-     * @return $this
+     * {@inheritDoc}
      */
-    public function setCreatedAt(\DateTime $createdAt)
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
-    /**
-     * Returns createdAt.
-     *
-     * @return DateTime
-     */
-    public function getCreatedAt()
-    {
-        return $this->createdAt;
-    }
-
-    /**
-     * Sets updatedAt.
-     *
-     * @param DateTime $updatedAt
-     * @return $this
-     */
-    public function setUpdatedAt(\DateTime $updatedAt)
-    {
-        $this->updatedAt = $updatedAt;
-
-        return $this;
-    }
-
-    /**
-     * Returns updatedAt.
-     *
-     * @return DateTime
-     */
-    public function getUpdatedAt()
-    {
-        return $this->updatedAt;
-    }
-
     public function setFilesize($filesize)
     {
         $this->filesize = $filesize;
@@ -356,20 +321,44 @@ class Document implements DocumentInterface, Translatable
         return $this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getFilesize()
     {
         return $this->filesize;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getThumbnail()
     {
         return $this->thumbnail;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function setThumbnail($thumbnail)
     {
         $this->thumbnail = $thumbnail;
 
         return $this;
+    }
+
+    /**
+     * __toString
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        $name = $this->name;
+        if (!$name) {
+            $name = 'new_document';
+        }
+
+        return $name;
     }
 }

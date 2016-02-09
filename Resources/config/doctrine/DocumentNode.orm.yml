@@ -1,12 +1,11 @@
 Erichard\DmsBundle\Entity\DocumentNode:
     type: entity
-    repositoryClass: Erichard\DmsBundle\Entity\DocumentNodeRepository
+    repositoryClass: Erichard\DmsBundle\Repository\DocumentNodeRepository
+    table: dms__document_node
     indexes:
         node_slug_idx:
             columns: [ slug ]
     gedmo:
-        translation:
-            locale: locale
         tree:
             type: closure
             closure: Erichard\DmsBundle\Entity\DocumentNodeClosure
@@ -17,8 +16,9 @@ Erichard\DmsBundle\Entity\DocumentNode:
     fields:
         name:
             type: string
-            gedmo:
-                - translatable
+        uniqRef:
+            type: string
+            nullable: true
         slug:
             type: string
             length: 128
@@ -31,10 +31,6 @@ Erichard\DmsBundle\Entity\DocumentNode:
             nullable: true
             gedmo:
                 - treeLevel
-        enabled:
-            type: boolean
-        resetPermission:
-            type: boolean
         createdAt:
             type: datetime
             gedmo:
@@ -61,6 +57,5 @@ Erichard\DmsBundle\Entity\DocumentNode:
             targetEntity: Erichard\DmsBundle\Entity\Document
             mappedBy: node
         metadatas:
-            targetEntity: Erichard\DmsBundle\Entity\DocumentNodeMetadata
+            targetEntity: Erichard\DmsBundle\Entity\DocumentNodeMetadataLnk
             mappedBy: node
-

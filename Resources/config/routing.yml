@@ -45,24 +45,6 @@ erichard_dms_remove_node:
     requirements:
         _method: GET
 
-erichard_dms_manage_node:
-    pattern: /{node}/manage
-    defaults: { _controller: ErichardDmsBundle:Node:manage }
-    requirements:
-        _method: GET
-
-erichard_dms_manage_role_node:
-    pattern: /{node}/manage/{role}
-    defaults: { _controller: ErichardDmsBundle:Node:manageRole }
-    requirements:
-        _method: GET|POST
-
-erichard_dms_reset_node:
-    pattern: /{node}/reset
-    defaults: { _controller: ErichardDmsBundle:Node:reset }
-    requirements:
-        _method: GET
-
 ##
 # Folder POST actions
 #

@@ -1,0 +1,102 @@
+{% extends dms_layout|default('ErichardDmsBundle:Standard/Node:layout.html.twig') %}
+
+{% block dms_documents %}
+
+    <h1>Step 2 : Create document</h1>
+
+    <form class="form-horizontal" action="{{ path('erichard_dms_create_document', {'node' : node.slug}) }}" method="POST">
+
+        {{ form_row(form.filename) }}
+        {{ form_row(form.originalName) }}
+
+        <div class="row-fluid">
+            <div class="span8">
+                <img class="img-polaroid" src="{{ preview_path }}" alt="">
+            </div>
+            <div class="span4">
+                {{ form_row(form.name, {'form_type': 'horizontal'}) }}
+            </div>
+        </div>
+        {{ form_rest(form) }}
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Save changes</button>
+          <button type="button" class="btn">Cancel</button>
+        </div>
+    </form>
+
+{% endblock %}
+
+
+{% block javascripts %}
+    {{ parent() }}
+    {% javascripts output="js/fine-uploader.js" filter="?yui_js"
+        'bundles/ericharddms/libs/plupload/js/plupload.full.min.js'
+        'bundles/ericharddms/libs/jquery.ui.progressbar/jquery.ui.progressbar.min.js'
+    %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+
+    <script type="text/javascript">
+        $(function() {
+            var uploader = new plupload.Uploader({
+                runtimes : 'html5,flash',
+                browse_button : 'pickfiles',
+                multi_selection: false,
+                container : 'uploader',
+                max_file_size : '{{ parameter('dms.storage.max_file_size') }}',
+                chunk_size : '{{ parameter('dms.storage.chunk_size') }}',
+                url : '{{ path('erichard_dms_upload_document') }}',
+                flash_swf_url : '{{ asset('bundles/ericharddms/libs/plupload/js/Moxie.swf') }}',
+            });
+
+            $('#uploadfiles').click(function(e) {
+                uploader.start();
+                e.preventDefault();
+            });
+
+            uploader.init();
+
+            uploader.bind('FilesAdded', function(up, files) {
+                $.each(files, function(i, file) {
+                    $('#filelist').append(
+                      '<a class="btn remove" id="' + file.id + '">' + file.name + ' <i class="icon-remove-sign"></a>'
+                    );
+                });
+                up.refresh(); // Reposition Flash/Silverlight
+            });
+
+            uploader.bind('QueueChanged', function(up) {
+                $('#pickfiles').prop('disabled', true);
+
+            });
+
+
+            uploader.bind('Error', function(up, err) {
+                alert("Error: " + err.code + ", Message: " + err.message + (err.file ? ", File: " + err.file.name : "") + "");
+                up.refresh(); // Reposition Flash/Silverlight
+            });
+
+            $('#uploader').on('click', 'a.remove',  function(e) {
+                uploader.removeFile(uploader.getFile(this.id));
+                $('#'+this.id).remove();
+                $('#pickfiles').prop('disabled', false);
+                e.preventDefault();
+            });
+
+            uploader.bind('UploadProgress', function(up, file) {
+                var progressBarValue = up.total.percent;
+                $('#progressbar').progressbar({
+                    value: progressBarValue
+                });
+                $('#progressbar .ui-progressbar-value').html('<span class="progressTooltip">' + up.total.percent + '%</span>');
+            });
+
+            uploader.bind('UploadComplete', function(up, files) {
+                $('#upload-success').show();
+                $('#filename').val(files[0].name);
+            });
+
+        });
+    </script>
+{% endblock %}
+

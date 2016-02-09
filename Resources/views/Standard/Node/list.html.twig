@@ -1,0 +1,7 @@
+{% extends dms_layout|default('ErichardDmsBundle:Standard/Node:layout.html.twig') %}
+
+{% block dms_documents %}
+
+    {% include 'ErichardDmsBundle:Standard/Node:_%s.html.twig'|format(mode) with {'documents' : node.documents, 'nodes': show_nodes ? node.nodes : []} %}
+
+{% endblock %}

@@ -1,0 +1,134 @@
+{% block dms_document_upload_row %}
+    {{ form_row(form) }}
+    <div class="upload-form" id="uploader">
+        <div id="upload-success" style="display:none;">
+            <div class="alert alert-success">
+                {{ 'success_message'|trans() }}
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label required" for="{{ form.vars.id }}_filelist">
+                {{ 'file_area_label'|trans() }}
+            </label>
+            <div class="sonata-ba-field sonata-ba-field-standard-natural">
+                <div style="width:100%;" required="required" class="select2-container select2-container-multi">
+                    <ul style="min-height:100px;cursor:pointer" id="{{ form.vars.id }}_filelist" class="select2-choices" ></ul>
+                </div>
+            </div>
+        </div>
+        <div>
+            <button class="btn btn-success" id="uploadfiles">
+                <i class="fa fa-upload"></i>
+                {{ 'upload_label'|trans() }}
+            </button>
+            <button class="btn btn-success" id="pickfiles">
+                <i class="fa fa-external-link"></i>
+                {{ 'select_files_label'|trans() }}
+            </button>
+            <div id="progressbar"></div>
+        </div>
+        {{ block('javascripts') }}
+        {% stylesheets '@ErichardDmsBundle/Resources/public/libs/jquery.ui.progressbar/jquery.ui.progressbar.min.css' %}
+        <link rel="stylesheet" href="{{ asset_url }}" type="text/css" />
+        {% endstylesheets %}
+        {% stylesheets '@ErichardDmsBundle/Resources/public/libs/jquery.ui.progressbar/jquery.ui.progressbar.theme.css' %}
+        <link rel="stylesheet" href="{{ asset_url }}" type="text/css" />
+        {% endstylesheets %}
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {% javascripts output="js/uploader.js" filter="?yui_js"
+    'bundles/ericharddms/libs/plupload/js/plupload.full.min.js'
+    'bundles/ericharddms/libs/jquery.ui.progressbar/jquery.ui.progressbar.min.js'
+    %}
+    <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+
+    <script type="text/javascript">
+        var uploader = new plupload.Uploader({
+            runtimes : 'html5,flash',
+            browse_button : 'pickfiles',
+            multi_selection: true,
+            max_file_size : '{{ parameter('dms.storage.max_file_size') }}',
+            chunk_size : '{{ parameter('dms.storage.chunk_size') }}',
+            drop_element : '{{ form.vars.id }}_filelist',
+            replace : true,
+            container : 'uploader',
+            unique_names : true,
+            url : '{{ path('admin_erichard_dms_document_upload') }}',
+            flash_swf_url : '{{ asset('bundles/ericharddms/libs/plupload/js/Moxie.swf') }}',
+
+            init: {
+                PostInit: function () {
+                    $('.form-actions > button[name="btn_create_and_list"]').html('<i class="fa fa-save"></i> {{ 'validate_label'|trans() }}')
+                    $('.form-actions > button[name="btn_create_and_list"]').hide();
+                    $('#{{ form.vars.id }}_filelist').innerHTML = '';
+                    $('#{{ form.vars.id }}_filelist').on('click', function(e) {
+                        var senderElement = e.target;
+                        if (!$(senderElement).hasClass('remove')) {
+                            $('#pickfiles').trigger('click');
+                        }
+                    });
+                    $('#uploadfiles').on('click', function () {
+                        $('a.remove').remove();
+                        uploader.start();
+                        return false;
+                    });
+                },
+
+                FilesAdded: function (up, files) {
+                    $.each(files, function (i, file) {
+                        $('#{{ form.vars.id }}_filelist').append(
+                            '<li class="select2-search-choice">' +
+                            '   <div>' + file.name + '</div>' +
+                            '   <a id="' + file.id + '" href="#" class="remove select2-search-choice-close" tabindex="-1"></a>' +
+                            '</li>'
+                        );
+                    });
+                    up.refresh(); // Reposition Flash/Silverlight
+                },
+
+                Error: function (up, err) {
+                    alert("Error: " + err.code + ", Message: " + err.message + (err.file ? ", File: " + err.file.name : "") + "");
+                    up.refresh(); // Reposition Flash/Silverlight
+                },
+
+
+                UploadProgress: function (up, file) {
+                    var progressBarValue = up.total.percent;
+                    $('#progressbar').progressbar({
+                        value: progressBarValue,
+                    });
+                    $('#uploadfiles').remove();
+                    $('#pickfiles').remove();
+                    $('.moxie-shim').remove();
+                    $('#progressbar .ui-progressbar-value').html('<div class="progressTooltip">' + up.total.percent + '%</div>');
+                    if (up.total.percent == 100) {
+                        setTimeout(function(){
+                            $('#upload-success').show();
+                            $('#progressbar').hide();
+                            $('.form-actions > button[name="btn_create_and_list"]').show();
+                            $('.form-actions > button[name="btn_create"]').show();
+                        }, 1000);
+                    }
+                },
+
+                FileUploaded: function (up, files) {
+                    var filename = $('#{{ form.vars.id }}_filename').val()+files.name+';';
+                    var targetName = $('#{{ form.vars.id }}_token').val()+files.target_name+';';
+                    $('#{{ form.vars.id }}_filename').val(filename);
+                    $('#{{ form.vars.id }}_token').val(targetName);
+                }
+            }
+        });
+
+        $('#uploader').on('click', 'a.remove', function(e) {
+            uploader.removeFile(uploader.getFile(this.id));
+            $('#'+this.id).closest('li').remove();
+            $('#pickfiles').prop('disabled', false);
+        });
+
+        uploader.init();
+    </script>
+{% endblock %}

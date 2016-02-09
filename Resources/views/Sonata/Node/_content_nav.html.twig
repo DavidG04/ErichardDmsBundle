@@ -1,0 +1,20 @@
+<ol class="nav navbar-top-links breadcrumb">
+    <li><a href="{{ path('admin_erichard_dms_documentnode_list', {'pid' : app.request.get('pid'), 'pcode' : app.request.get('pcode')}) }}"><i class="fa fa-home"></i></a></li>
+    {% set key = false %}
+    {% for parent in node.path %}
+        {% if key is same as(true) %}
+            <li class="dropdown">
+                <a href="{{ path('admin_erichard_dms_documentnode_list', {'node' : parent.slug, 'pid' : app.request.get('pid'), 'pcode' : app.request.get('pcode')})  }}">{{ parent.name }}</a>
+            </li>
+        {% endif %}
+        {% if is_granted(parameter('dms.permission.super_admin_role')) or parent.getSlug() == parent_node.getSlug() %}
+            {% set key = true %}
+        {% endif %}
+    {% endfor %}
+    {% if document is defined and block('breadcrumb_inner') is empty %}
+        <li class="active">{{ document.name }}</li>
+    {% elseif document is defined %}
+        <li><a href="{{ path('erichard_dms_show_document', { node: document.node.slug, document: document.slug}) }}">{{ document.name }}</a></li>
+    {% endif %}
+    {% block breadcrumb_inner %}{% endblock %}
+</ol>

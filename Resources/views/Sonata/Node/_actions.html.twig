@@ -1,0 +1,12 @@
+<div class="well well-small form-actions">
+    {% if is_granted(parameter('dms.permission.roles_node').create) or is_granted(parameter('dms.permission.super_admin_role')) %}
+        <a href="{{ path('admin_erichard_dms_document_create', {'node' : node.slug, 'pid' : app.request.get('pid'), 'pcode' : app.request.get('pcode')}) }}" class="btn btn-success">
+            <i class="fa fa-plus-circle"></i> {{ 'add_documents'|trans({}, 'ErichardDmsBundle') }}
+        </a>
+    {% endif %}
+    {% if is_granted(parameter('dms.permission.roles_document').create) or is_granted(parameter('dms.permission.super_admin_role')) %}
+        <a href="{{ path('admin_erichard_dms_documentnode_create', {'node' : node.slug, 'pid' : app.request.get('pid'), 'pcode' : app.request.get('pcode')}) }}" class="btn btn-success">
+            <i class="fa fa-plus-circle"></i> {{ 'add_node'|trans({}, 'ErichardDmsBundle') }}
+        </a>
+    {% endif %}
+</div>

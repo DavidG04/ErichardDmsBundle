@@ -1,0 +1,80 @@
+{% set icon = 'folder' %}
+{% set name = node.name %}
+{% if node.parent is not null %}
+    {% if node.parent.getSlug() == parent_node.getSlug() %}
+        {% set icon = 'home' %}
+        {% set name = 'home'|trans({}, 'ErichardDmsBundle') %}
+    {% endif %}
+{% endif %}
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr class="sonata-ba-list-field-header">
+            <th class="sonata-ba-list-field-header-text"></th>
+            <th class="sonata-ba-list-field-header-text sonata-ba-list-field-header-order-asc">{{ 'title'|trans({}, 'ErichardDmsBundle') }}</th>
+            <th class="sonata-ba-list-field-header-text">{{ 'extension'|trans({}, 'ErichardDmsBundle') }}</th>
+            <th class="sonata-ba-list-field-header-actions">{{ 'actions'|trans({}, 'ErichardDmsBundle') }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if node.parent is not null and (is_granted(parameter('dms.permission.roles_node').list) or is_granted(parameter('dms.permission.super_admin_role')))%}
+            <tr>
+                <td style="height:64px;width:64px;text-align:center">
+                    <i class="fa fa-{{ icon }} fa-2x"></i>
+                </td>
+                <td>
+                    <h4 class="media-heading"> <a href="{{ path('admin_erichard_dms_documentnode_list', { 'node' : node.parent.slug, 'pid' : app.request.get('pid'), 'pcode' : app.request.get('pcode') }) }}" title="{{ name }}">../</a></h4>
+                </td>
+                <td></td>
+                <td></td>
+            </tr>
+        {% endif %}
+        {% if is_granted(parameter('dms.permission.roles_document').list) or is_granted(parameter('dms.permission.super_admin_role')) %}
+            {% for document in documents %}
+                <tr>
+                    <td style="height:64px;width:64px">
+                        <a href="{% if is_granted(parameter('dms.permission.roles_document').show) or is_granted(parameter('dms.permission.super_admin_role')) %}{{ path('admin_erichard_dms_document_show', { 'node' : node.slug, 'id' : document.slug }) }}{% else %}#{% endif %}" class="thumbnail no-margin"  title="{{ document.name }}">
+                            <img src="{{ sonataThumbUrl(document, parameter('dms.table.image_size')) }}" />
+                        </a>
+                    </td>
+                    <td>
+                        <a href="{% if is_granted(parameter('dms.permission.roles_document').show) or is_granted(parameter('dms.permission.super_admin_role')) %}{{ path('admin_erichard_dms_document_show', { 'node' : node.slug, 'id' : document.slug }) }}{% else %}#{% endif %}">
+                            {{ document.name }}
+                        </a>
+                    </td>
+                    <td>{{ document.mimeType }}</td>
+                    <td class="sonata-ba-list-field sonata-ba-list-field-actions">
+                        <div class="btn-group">
+                            {% if is_granted(parameter('dms.permission.roles_document').show) or is_granted(parameter('dms.permission.super_admin_role')) %}
+                                <a href="{{ path('admin_erichard_dms_document_show', {'id': document.slug, 'node' : node.slug, 'pid' : app.request.get('pid'), 'pcode' : app.request.get('pcode')}) }}" class="btn btn-sm btn-default view_link loader_link">
+                                    <i class="fa fa-search-plus"></i> {{ 'show_label'|trans({}, 'ErichardDmsBundle') }}
+                                </a>
+                            {% endif %}
+                            {% if is_granted(parameter('dms.permission.roles_document').download) or is_granted(parameter('dms.permission.super_admin_role')) %}
+                                <a href="#" class="download_ajax_{{ document.slug }} no_loader btn btn-sm btn-default view_link">
+                                    <i class="fa fa-download"></i> {{ 'download_documents'|trans({}, 'ErichardDmsBundle') }}
+                                </a>
+                                <script>
+                                    $('.download_ajax_{{ document.slug }}').on('click', function(){
+                                       location.href = '{{ (path('admin_erichard_dms_document_download', {'document': document.slug, 'node' : node.slug, 'pid' : app.request.get('pid'), 'pcode' : app.request.get('pcode')}))|raw }}';
+                                    });
+                                </script>
+                            {% endif %}
+                            {% if is_granted(parameter('dms.permission.roles_document').edit) or is_granted(parameter('dms.permission.super_admin_role')) %}
+                                <a href="{{ path('admin_erichard_dms_document_edit', {'id' : document.id, 'document': document.slug, 'node' : node.slug, 'pid' : app.request.get('pid'), 'pcode' : app.request.get('pcode')}) }}" class="btn btn-sm btn-default view_link loader_link">
+                                    <i class="fa fa-pencil-square-o"></i> {{ 'edit_label'|trans({}, 'ErichardDmsBundle') }}
+                                </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td style="height:64px;width:64px"></td>
+                    <td>{{ 'empty_folder'|trans({}, 'ErichardDmsBundle') }}</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            {% endfor %}
+        {% endif %}
+    </tbody>
+</table>

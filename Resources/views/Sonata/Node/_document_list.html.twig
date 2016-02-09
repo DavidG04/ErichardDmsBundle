@@ -1,0 +1,7 @@
+<div class="box box-primary">
+    <div class="box-body table-responsive no-padding">
+        <div class="sonata-ba-list">
+            {% include 'ErichardDmsBundle:Sonata/Node:_%s.html.twig'|format(mode) with {'documents' : node.documents, 'nodes': show_nodes ? node.nodes : []} %}
+        </div>
+    </div>
+</div>

@@ -18,27 +18,6 @@ services:
         tags:
             - { name: twig.extension }
 
-    dms.security.access.hierarchical_voter:
-        class:      Erichard\DmsBundle\Security\Voter\HierarchicalAclVoter
-        public:     false
-        arguments:
-            - @dms.security.access.permission_map
-            - @dms.security.access.control_list
-            - { permission_enabled: %dms.permission.enabled% }
-        tags:
-            - { name: security.voter }
-
-    dms.security.access.permission_map:
-        class: Erichard\DmsBundle\Security\Acl\Permission\DmsPermissionMap
-
-    dms.security.access.control_list:
-        class: Erichard\DmsBundle\Security\Acl\Acl
-        arguments:
-            - @security.role_hierarchy
-            - @doctrine.orm.entity_manager
-            - @session=
-            - { cache_dir: %kernel.cache_dir%, super_admin_role: %dms.permission.super_admin_role% }
-
     dms.security.role_provider:
         class: Erichard\DmsBundle\Security\RoleProvider
         arguments:
@@ -47,7 +26,8 @@ services:
     dms.form.document_type:
         class: Erichard\DmsBundle\Form\DocumentType
         arguments:
-            - %dms.storage.tmp_path%
+            - @doctrine
+            - @dms.node_provider
         tags:
             - { name: form.type, alias: dms_document }
 
@@ -55,15 +35,15 @@ services:
         class: Erichard\DmsBundle\Form\NodeType
         arguments:
             - @doctrine
+            - @dms.node_provider
+            - @request_stack
         tags:
             - { name: form.type, alias: dms_node }
 
-    dms.form.node_selector_type:
-        class: Erichard\DmsBundle\Form\NodeSelectorType
-        arguments:
-            - @doctrine
+    dms.form.document_document_upload_type:
+        class: Erichard\DmsBundle\Form\DocumentUploadType
         tags:
-            - { name: form.type, alias: dms_node_selector }
+            - { name: form.type, alias: dms_document_upload }
 
     dms.form.node_metadata_type:
         class: Erichard\DmsBundle\Form\NodeMetadataType
@@ -80,33 +60,50 @@ services:
             - { name: form.type, alias: document_metadata }
 
     dms.repository.document:
-        class: Erichard\DmsBundle\Entity\DocumentRepository
+        class: Erichard\DmsBundle\Repository\DocumentRepository
         factory_service: doctrine
         factory_method: getRepository
         arguments:
             - Erichard\DmsBundle\Entity\Document
         calls:
-            - [ setSecurityContext, [ @security.context ]]
+            - [ setSecurityTokenStorage, [ @security.token_storage ]]
 
-    dms.repository.documentNode:
-        class: Erichard\DmsBundle\Entity\DocumentNodeRepository
+    dms.repository.documentnode:
+        class: Erichard\DmsBundle\Repository\DocumentNodeRepository
         factory_service: doctrine
         factory_method: getRepository
-        arguments:
-            - Erichard\DmsBundle\Entity\DocumentNode
-        calls:
-            - [ setSecurityContext, [ @security.context ]]
 
     dms.manager:
-        class:  Erichard\DmsBundle\DmsManager
+        class:  Erichard\DmsBundle\Service\DmsManager
         arguments:
-            - @doctrine
-            - @security.context
-            - @dms.mime_type_manager
-            - @router
+            - @service_container
             - { storage_path: %dms.storage.path%, cache_path: %dms.cache.path% }
 
     dms.mime_type_manager:
-        class: Erichard\DmsBundle\MimeTypeManager
+        class: Erichard\DmsBundle\Service\MimeTypeManager
         arguments:
             - @kernel
+
+    dms.node_provider:
+        class: Erichard\DmsBundle\Service\NodeProvider
+        arguments:
+            - @service_container
+
+    dms.document_upload_manager:
+        class: Erichard\DmsBundle\Service\UploadManager
+        arguments:
+            - @service_container
+
+    dms.gedable.listener:
+        class: Erichard\DmsBundle\Event\GedableListener
+        tags:
+            - { name: doctrine.event_listener, event: postUpdate }
+        arguments:
+            - @service_container
+
+    dms.node.listener:
+        class: Erichard\DmsBundle\Event\DmsNodeEvent
+        tags:
+            - { name: doctrine.event_listener, event: postLoad }
+        calls:
+            - [ setNodeProvider , [ @dms.node_provider ] ]

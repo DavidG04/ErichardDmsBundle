@@ -1,31 +1,66 @@
 <?php
+/**
+ * Created by PhpStorm.
+ * User: d.galaup
+ * Date: 22/01/2016
+ * Time: 14:48
+ */
 
 namespace Erichard\DmsBundle\Form;
 
+use Doctrine\ORM\EntityManager;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 
+/**
+ * Class NodeMetadataType
+ *
+ * @package Erichard\DmsBundle\Form
+ */
 class NodeMetadataType extends AbstractType
 {
-    protected $em;
+    /**
+     * EntityManager
+     *
+     * @var EntityManager
+     */
+    protected $emn;
 
-    public function __construct($em)
+    /**
+     * DocumentMetadataType constructor.
+     *
+     * @param EntityManager $emn
+     */
+    public function __construct($emn)
     {
-        $this->em = $em;
+        $this->emn = $emn;
     }
 
+    /**
+     * buildForm
+     *
+     * @param FormBuilderInterface $builder
+     * @param array                $options
+     *
+     * @SuppressWarnings("unused")
+     */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $metadatas = $this->em->getRepository('Erichard\DmsBundle\Entity\Metadata')->findByScope(array('node', 'both'));
+        $metadatas = $this->emn->getRepository('Erichard\DmsBundle\Entity\DocumentMetadata')->findByScope(array('node', 'both'));
 
-        foreach ($metadatas as $m) {
-            $builder->add($m->getName(), $m->getType(), array_merge(array(
-                'label' => $m->getLabel(),
-                'required' => $m->isRequired(),
-            ), $m->getAttributes()));
+        foreach ($metadatas as $meta) {
+            $builder->add($meta->getName(), $meta->getType(), array_merge(array(
+                'label' => $meta->getLabel(),
+                'required' => $meta->isRequired(),
+            ), $meta->getAttributes()));
         }
     }
 
+    /**
+     * getName
+     *
+     * @return string
+     */
     public function getName()
     {
         return 'node_metadata';

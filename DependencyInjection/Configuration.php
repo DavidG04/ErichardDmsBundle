@@ -1,4 +1,10 @@
 <?php
+/**
+ * Created by PhpStorm.
+ * User: d.galaup
+ * Date: 19/01/2016
+ * Time: 15:25
+ */
 
 namespace Erichard\DmsBundle\DependencyInjection;
 
@@ -6,14 +12,16 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 /**
- * This is the class that validates and merges configuration from your app/config files
+ * Class Configuration
  *
- * To learn more see {@link http://symfony.com/doc/current/cookbook/bundles/extension.html#cookbook-bundles-extension-config-class}
+ * @package Erichard\DmsBundle\DependencyInjection
  */
 class Configuration implements ConfigurationInterface
 {
     /**
      * {@inheritDoc}
+     *
+     * @SuppressWarnings(PHPMD)
      */
     public function getConfigTreeBuilder()
     {
@@ -32,15 +40,24 @@ class Configuration implements ConfigurationInterface
                         ->end()
                     ->end()
                 ->end()
-
                 ->arrayNode('storage')
                     ->addDefaultsIfNotSet()
                     ->children()
+                        ->scalarNode('max_file_size')
+                            ->defaultValue('1gb')
+                        ->end()
+                        ->scalarNode('chunk_size')
+                            ->defaultValue('5mb')
+                        ->end()
                         ->scalarNode('path')
                             ->isRequired()
                             ->cannotBeEmpty()
                             ->validate()
-                                ->ifTrue(function($v) { return !is_dir($v); })
+                                ->ifTrue(
+                                    function ($v) {
+                                        return !is_dir($v);
+                                    }
+                                )
                                 ->thenInvalid('The given path does not exist : %s')
                             ->end()
                         ->end()
@@ -48,13 +65,16 @@ class Configuration implements ConfigurationInterface
                             ->cannotBeEmpty()
                             ->defaultValue(sys_get_temp_dir())
                             ->validate()
-                                ->ifTrue(function($v) { return !is_dir($v); })
+                                ->ifTrue(
+                                    function ($v) {
+                                        return !is_dir($v);
+                                    }
+                                )
                                 ->thenInvalid('The given path does not exist : %s')
                             ->end()
                         ->end()
                     ->end()
                 ->end()
-
                 ->arrayNode('cache')
                     ->addDefaultsIfNotSet()
                     ->children()
@@ -62,13 +82,16 @@ class Configuration implements ConfigurationInterface
                             ->isRequired()
                             ->cannotBeEmpty()
                             ->validate()
-                                ->ifTrue(function($v) { return !is_dir($v); })
+                                ->ifTrue(
+                                    function ($v) {
+                                        return !is_dir($v);
+                                    }
+                                )
                                 ->thenInvalid('The given path does not exist : %s')
                             ->end()
                         ->end()
                     ->end()
                 ->end()
-
                 ->arrayNode('gallery')
                     ->addDefaultsIfNotSet()
                     ->children()
@@ -76,65 +99,80 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('image_size')
                             ->defaultValue('260x180')
                             ->validate()
-                                ->ifTrue(function($v) { return !preg_match('/\d+x\d+/', $v); })
+                                ->ifTrue(
+                                    function ($v) {
+                                        return !preg_match('/\d+x\d+/', $v);
+                                    }
+                                )
                                 ->thenInvalid('The given size "%s" is not valid. Please use the {width}x{height} format.')
                             ->end()
                         ->end()
                     ->end()
                 ->end()
-
                 ->arrayNode('content')
                     ->addDefaultsIfNotSet()
                     ->children()
                         ->scalarNode('image_size')
                             ->defaultValue('190x80')
                             ->validate()
-                                ->ifTrue(function($v) { return !preg_match('/\d+x\d+/', $v); })
+                                ->ifTrue(
+                                    function ($v) {
+                                        return !preg_match('/\d+x\d+/', $v);
+                                    }
+                                )
                                 ->thenInvalid('The given size "%s" is not valid. Please use the {width}x{height} format.')
                             ->end()
                         ->end()
                     ->end()
                 ->end()
-
                 ->arrayNode('showcase')
                     ->addDefaultsIfNotSet()
                     ->children()
                         ->scalarNode('image_size')
-                            ->defaultValue('870x400')
+                            ->defaultValue('1200x900')
                             ->validate()
-                                ->ifTrue(function($v) { return !preg_match('/\d+x\d+/', $v); })
+                                ->ifTrue(
+                                    function ($v) {
+                                        return !preg_match('/\d+x\d+/', $v);
+                                    }
+                                )
                                 ->thenInvalid('The given size "%s" is not valid. Please use the {width}x{height} format.')
                             ->end()
                         ->end()
                     ->end()
                 ->end()
-
                 ->arrayNode('show')
                     ->addDefaultsIfNotSet()
                     ->children()
                         ->scalarNode('image_size')
-                            ->defaultValue('576x400')
+                            ->defaultValue('440x600')
                             ->validate()
-                                ->ifTrue(function($v) { return !preg_match('/\d+x\d+/', $v); })
+                                ->ifTrue(
+                                    function ($v) {
+                                        return !preg_match('/\d+x\d+/', $v);
+                                    }
+                                )
                                 ->thenInvalid('The given size "%s" is not valid. Please use the {width}x{height} format.')
                             ->end()
                         ->end()
                     ->end()
                 ->end()
-
                 ->arrayNode('table')
                     ->addDefaultsIfNotSet()
                     ->children()
                         ->scalarNode('image_size')
                             ->defaultValue('32x32')
                             ->validate()
-                                ->ifTrue(function($v) { return !preg_match('/\d+x\d+/', $v); })
+                                ->ifTrue(
+                                    function ($v) {
+                                        return !preg_match('/\d+x\d+/', $v);
+                                    }
+                                )
                                 ->thenInvalid('The given size "%s" is not valid. Please use the {width}x{height} format.')
                             ->end()
                         ->end()
                     ->end()
                 ->end()
-
                 ->arrayNode('permission')
                     ->addDefaultsIfNotSet()
                     ->children()
@@ -142,27 +180,43 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('super_admin_role')
                             ->defaultValue('ROLE_ADMIN_DMS')
                         ->end()
+                        ->scalarNode('sonata_role_slug')
+                            ->defaultValue('DMS')
+                        ->end()
                         ->scalarNode('role_provider')
                             ->cannotBeEmpty()
                         ->end()
-                        ->arrayNode('roles')
+                        ->arrayNode('roles_node')
+                            ->defaultValue(array())
+                            ->prototype('scalar')->end()
+                        ->end()
+                        ->arrayNode('roles_document')
                             ->defaultValue(array())
                             ->prototype('scalar')->end()
                         ->end()
                     ->end()
                 ->end()
-
                 ->arrayNode('workspace')
                     ->addDefaultsIfNotSet()
                     ->children()
-                        ->booleanNode('show_nodes')->defaultValue(false)->end() ->end()
+                        ->booleanNode('show_nodes')->defaultValue(false)->end()
+                        ->scalarNode('user_pattern')
+                            ->defaultValue('^(user|USER)-([0-9]*)$')
+                        ->end()
+                    ->end()
                 ->end()
-            ->end()
-        ;
+            ->end();
 
         return $treeBuilder;
     }
 
+    /**
+     * addImageSizeNode
+     *
+     * @param mixed $defaultSize
+     *
+     * @return \Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition|\Symfony\Component\Config\Definition\Builder\NodeDefinition
+     */
     public function addImageSizeNode($defaultSize)
     {
         $builder = new TreeBuilder();
@@ -174,7 +228,11 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('image_size')
                     ->defaultValue($defaultSize)
                     ->validate()
-                        ->ifTrue(function($v) { return !preg_match('/\d+x\d+/', $v); })
+                        ->ifTrue(
+                            function ($v) {
+                                return !preg_match('/\d+x\d+/', $v);
+                            }
+                        )
                         ->thenInvalid('The given size "%s" is not valid. Please use the {width}x{height} format.')
                     ->end()
                 ->end()
